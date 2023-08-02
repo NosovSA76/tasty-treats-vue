@@ -55,7 +55,6 @@ import axios from "axios";
 import { EffectCube, Pagination, Autoplay, Navigation } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/vue";
 import "swiper/css";
-import "swiper/css/effect-cube";
 import "swiper/css/pagination";
 
 export default {
@@ -69,9 +68,6 @@ export default {
         modules: [EffectCube, Pagination, Autoplay, Navigation],
        pagination: {
           clickable: true,
-        //   renderBullet: function (index, className) {
-        //     return '<span class="' + className + '">' + (index + 1) + '</span>';
-        //   },
         },
     };
   },
@@ -105,8 +101,8 @@ export default {
 };
 </script>
 
-<style>
-.cook {
+<style lang="scss">
+.cook{
   display: block;
   height: 280px;
   width: 80px;
@@ -114,21 +110,30 @@ export default {
   background-repeat: no-repeat;
   background-position: center;
   border-radius: 15px;
+  @media screen and (min-width: 768px) {
+    height: 442px;
+    width: 137px;
+  }
 }
 
-.preview-deash-card {
+.preview-deash-card{
   display: flex;
   margin: 0 10px;
   height: 280px;
   width: 200px;
-  background-color: black;
+  background-color: var(--black);
   border-radius: 15px;
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  @media screen and (min-width: 768px) {
+    margin: 0 16px;
+    height: 442px;
+    width: 351px;
+  }
 }
 
-.deash-name {
+.deash-name{
   display: block;
   font-size: 10px;
   line-height: 14px;
@@ -137,16 +142,25 @@ export default {
   color: var(--gray-slider-title-w);
   text-transform: uppercase;
   width: 172px;
+  @media screen and (min-width: 768px) {
+    width: 276px;
+    font-size: 14px;
+    line-height: 18px;
+  }
 }
 
-.deash-area {
+.deash-area{
   display: block;
   font-size: 8px;
   line-height: 12px;
-  color: rgba(255, 255, 255, 0.2);
+  color: var(--gray-slider-desc-w);
+  @media screen and (min-width: 768px) {
+    font-size: 12px;
+    line-height: 14px;
+  }
 }
 
-.preview-deash {
+.preview-deash{
   display: block;
   height: 150px;
   width: 150px;
@@ -154,30 +168,44 @@ export default {
   background-repeat: no-repeat;
   background-position: center;
   border-radius: 15px;
+  @media screen and (min-width: 768px) {
+    height: 262px;
+    width: 262px;
+  }
+  @media screen and (min-width: 1280px) {
+    height: 271px;
+    width: 304px;
+  }
 }
 
-.deash {
+.deash{
   display: block;
   height: 280px;
   width: 185px;
   background-size: 564px;
   border-radius: 15px;
-  background-position: 30%;
+  background-position:30%;
   background-color: var(--black);
+  @media screen and (min-width: 768px) {
+    background-size: 863px;
+    height: 442px;
+    width: 351px;
+  }
 }
 
-.crunch {
+.crunch{
   width: 515px;
-  height: 442px;
+   height: 484px;
+  @media screen and (min-width: 768px) {
+    width: 889px;
+    height: 484px;
+  }
 }
+
 .swiper {
   width: 889px;
   height: 484px;
   position: absolute;
-  /* left: 50%;
-  top: 50%;
-  margin-left: -150px;
-  margin-top: -150px; */
 }
 
 .swiper-slide {
@@ -189,42 +217,5 @@ export default {
   display: block;
   width: 100%;
 }
-@media screen and (min-width: 768px) {
-  .cook {
-    height: 442px;
-    width: 137px;
-  }
-  .preview-deash-card {
-    margin: 0 16px;
-    height: 442px;
-    width: 351px;
-  }
-  .deash-name {
-    width: 276px;
-    font-size: 14px;
-    line-height: 18px;
-  }
 
-  .deash-area {
-    font-size: 12px;
-    line-height: 14px;
-  }
-
-  .preview-deash {
-    height: 262px;
-    width: 262px;
-  }
-  .deash {
-    background-size: 863px;
-    height: 442px;
-    width: 351px;
-  }
-}
-
-@media screen and (min-width: 1280px) {
-  .preview-deash {
-    height: 271px;
-    width: 304px;
-  }
-}
 </style>
