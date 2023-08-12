@@ -3,22 +3,44 @@
     <div v-if="isLoading">Loading...</div>
     <Header v-if="isLoaded" />
     <router-view v-if="isLoaded" />
+    <Modal v-model:show="cardData">
+      <div><HeroModal></HeroModal></div>
+    </Modal>
+    <Modal v-model:show="showRecipe">
+    <div><FuulReciept></FuulReciept></div>
+    </Modal>
   </div>
 </template>
 
 <script>
 import Header from "@/components/Header";
 import store from "@/store/index";
+import Modal from "@/components/UI/modal.vue";
+import HeroModal from "@/components/Modals/OrderModals"
+import FuulReciept from "@/components/Modals/RecieptModal.vue"
+
 
 export default {
   components: {
     Header,
+    HeroModal,
+    Modal,
+    FuulReciept,
   },
   data() {
     return {
       isLoading: true,
       isLoaded: false,
     };
+  },
+  computed: {
+    cardData() {
+      return store.state.heroModal; 
+    },
+    showRecipe() {
+      return store.state.recieptModal; 
+    },
+
   },
   mounted() {
     store.dispatch("fetchAllIngredients");
@@ -50,9 +72,7 @@ export default {
 
 .header {
   padding-top: 24px;
-}
-@media screen and (min-width: 768px) {
-  .header {
+  @media screen and (min-width: 768px) {
     padding-top: 28px;
   }
 }

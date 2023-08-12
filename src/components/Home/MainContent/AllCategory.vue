@@ -1,12 +1,12 @@
 <template>
   <div class="category-container">
-    <button class="all-category-button active" id="all-category-btn">
+    <button @click="cleanSelectadCategory" :class="['all-category-button', { active: selectedCategory === '' }]" id="all-category-btn">
       All categories
     </button>
     <div class="categories-container">
       <ul class="category-list">
-          <li class='cat-items' v-for="catedory in catedoryes" :key="catedory._id">
-          <button class='category-btn'>{{catedory.name}}</button>
+          <li class='cat-items' v-for="(category, index) in categoriesForSelect" :key="index">
+          <button :class="['category-btn', { active: selectedCategory === category }]" @click="setSelectedCategory(category)">{{category}}</button>
           </li>
       </ul>
     </div>
@@ -14,35 +14,55 @@
 </template>
 
 <script>
-import axios from "axios";
+import store from "@/store/index";
 
 export default {
   name: "AllCategory",
+
   data() {
     return {
-      catedoryes: [],
-      isPopularLoading: false,
+      selectedCategory: ""
     };
   },
   methods: {
-    async fetchCategories() {
-      try {
-        const response = await axios.get(
-          'https://tasty-treats-backend.p.goit.global/api/categories');
-
-        console.log(response.data)
-        if (response.status === 404) {
-          throw new Error(response.status);
-        }
-        this.catedoryes = response.data
-      } catch (error) {
-        console.log(error);
-      };
-    }
-  },
-    mounted() {
-      this.fetchCategories();
+    setSelectedCategory(category) {
+      this.selectedCategory = category;
+      this.getDate();
     },
+
+    cleanSelectadCategory() {
+      this.selectedCategory = "";
+      this.getDate();
+    },
+
+    getDate() {
+      store.dispatch("set", { key: "category", value: this.selectedCategory });
+      store.dispatch("set", {key: "page", value: 1});
+      store.dispatch("setFilterValue");
+      store
+        .dispatch("fetchRecipesAfterUpdate")
+        .then()
+        .catch((error) => {
+          console.log(error);
+        });
+    },
+
+  },
+
+    computed: {
+      categoriesForSelect() {
+      if (store.state.categoriesFilter.length > 0) {
+        return store.state.categoriesFilter.sort((a, b) => {
+          return a.localeCompare(b, "en", { sensitivity: "base" });
+        });
+      } else {
+        return store.state.categories.sort((a, b) => {
+          return a.localeCompare(b, "en", { sensitivity: "base" });
+        });
+      }
+    },
+  },
+
   
 }
 </script>

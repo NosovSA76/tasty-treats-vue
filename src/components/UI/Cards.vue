@@ -1,12 +1,11 @@
 <template lang="">
   <li
-    class="card_container"
-    id="{{category}}"
+    class="card_container" :class="[cardFavouritesClass]"
     v-for="recipe in recipes"
     :key="recipe._id"
   >
-    <button aria-label="Favorite Button" class="card_favourites_btn button">
-      <svg class="card_heart" width="22" height="22" viewBox="0 0 32 32">
+    <button aria-label="Favorite Button" class="card_favourites_btn button" @click="toggleFavorite(recipe)" @mouseup="removeFocus">
+      <svg class="card_heart" :class="{ 'filled-heart': isFavorite(recipe) }" width="22" height="22" viewBox="0 0 32 32">
         <use href="@/assets/SPRITE.svg#icon-heart"></use>
       </svg>
     </button>
@@ -32,42 +31,101 @@
             :class="{ filled: index <= Math.round(recipe.rating) }"
           ></star>
         </div>
-        <button id="{{recipe._id}}" class="card_btn">See recipe</button>
+        <button @click="modalShow(recipe._id)" id="{{recipe._id}}" class="card_btn">See recipe</button>
       </div>
     </div>
   </li>
+  
 </template>
 <script>
 import Star from "@/components/UI/ReiringStar";
+// import StarRating from 'vue-star-rating'
+import store from "@/store/index";
+import { save, load, remove } from '@/utils/localStorageHelpers';
 
 export default {
   name: "ReceptCards",
   components: {
     Star,
   },
-
+  data() {
+  return {
+    favorites: [],
+    receiptRend: [], // Corrected variable name
+  };
+},
   props: {
     recipes: {
       type: Array,
       required: true,
     },
+      cardFavouritesClass: String,
+
   },
   mounted() {
     if (!Array.isArray(this.recipes)) {
       console.error("Властивість recipes має бути масивом.");
       return;
     }
-
-    console.log(this.recipes);
+    this.favorites = load('favorites') || [],
+    // this.favorites = JSON.parse(localStorage.getItem('favorites')) || [],
+    store.dispatch("set", {key: "favoritesReciepts", value: this.favorites});
+    this.recieptRend = this.recipes
+    this.$watch(
+      () => store.state.favoritesReciepts,
+      () => {
+        this.favorites = load('favorites') || [];
+        store.dispatch("set", { key: "favoritesReciepts", value: this.favorites });
+      }
+    );
   },
+
+  computed: {
+    isFavorite() {
+      // this.favorites = JSON.parse(localStorage.getItem('favorites'))
+      return (recipe) =>
+        this.favorites.some((favRecipe) => favRecipe._id === recipe._id);
+    },
+  },
+    
 
   methods: {
     computedRating(rating) {
       return Math.round(rating * 10) / 10;
     },
+
+    modalShow(id) {
+      store.dispatch("FechFullRecipe", id);
+      console.log(id);
+    },
+
+    toggleFavorite(recipe) {
+      const existingRecipeIndex = this.favorites.findIndex(
+        (favRecipe) => favRecipe._id === recipe._id
+      );
+      if (existingRecipeIndex !== -1) {
+        this.favorites.splice(existingRecipeIndex, 1);
+      } else {
+        this.favorites.push(recipe);
+      }
+      // localStorage.setItem("favorites", JSON.stringify(this.favorites));
+      save("favorites", this.favorites);
+      store.dispatch("set", {key: "favoritesReciepts", value: this.favorites});
+      console.log(store.favoritesReciepts)
+    },
+
+    removeFocus() {
+      document.activeElement.blur();
+    },
+
   },
+  onMounted() {
+    this.favorites = load('favorites')
+  },
+  
 };
 </script>
+
 <style lang="scss">
 .container-cards {
   min-height: 287px;
@@ -94,7 +152,7 @@ export default {
   position: relative;
   display: flex;
   flex-direction: column;
-  width: 100%;
+  
   max-width: 335px;
   height: 335px;
   margin: 0 auto;
@@ -222,11 +280,11 @@ export default {
   color: var(--black);
 }
 
-.heart-filled {
-  fill: var(--background-w);
-}
-
 .is-hidden-cook {
   display: none;
 }
+.filled-heart {
+  fill: var(--yellow-star);
+}
+
 </style>

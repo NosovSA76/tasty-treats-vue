@@ -1,5 +1,6 @@
 <template>
   <div class="home">
+
     <Hero></Hero>
     <MainSection></MainSection>
   </div>
@@ -17,6 +18,7 @@ export default {
   components: {
     Hero,
 MainSection,
-  }
+  },
+
 }
 </script>

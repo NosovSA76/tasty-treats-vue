@@ -5,11 +5,11 @@
     <div class="header-items">
       <nav class="navigation">
       <router-link class="header-nav-links btn-home" to="/">Home</router-link>
-      <router-link class="header-nav-links" to="/about">Favorites</router-link>
+      <router-link class="header-nav-links" to="/favorites">Favorites</router-link>
     </nav>
       <a href="/" class="logo-first">tasty<span class="logo-second">treats.</span></a>
       <div class="header-icons">
-        <button class="header-order-btn" aria-label="shopping btn" type="button" id="imitation">
+        <button  @click="modalShow" class="header-order-btn" aria-label="shopping btn" type="button" id="imitation">
           <svg class="shopping-icon order-btn" width="24" height="24">
             <use class="shopping-icon-use" href="@/assets/SPRITE.svg#icon-shopping-cart-03"></use>
           </svg>
@@ -49,8 +49,15 @@
     </div>
 </template>
 <script>
+import store from "@/store/index";
 export default {
-    name: "Header"
+    name: "Header",
+    methods:{
+    modalShow(){
+      store.dispatch("setHeroModal",  true);
+      console.log(store.state)
+    },
+  }
 }
 </script>
 <style lang="scss">

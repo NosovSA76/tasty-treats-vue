@@ -7,6 +7,7 @@
       <div class="container-recipies1">
         <div class="recipes" v-for="reciept in popular" :key="reciept._id">
           <img
+          @click="modalShow(reciept._id)" 
             :id="reciept._id"
             class="popular-img"
             :src="reciept.preview"
@@ -24,6 +25,7 @@
 
 <script>
 import axios from "axios";
+import store from "@/store/index";
 
 export default {
   name: "Popular",
@@ -51,6 +53,10 @@ export default {
       } finally {
         this.isPopularLoading = true;
       }
+    },
+    modalShow(id){
+      store.dispatch("FechFullRecipe", id );
+      console.log(id)
     },
   },
   mounted() {

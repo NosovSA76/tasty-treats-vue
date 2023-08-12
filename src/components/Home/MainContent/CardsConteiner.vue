@@ -9,7 +9,7 @@
 
 <script>
 import { mapState, mapActions } from "vuex";
-import ReceptCards from "@/components/Home/MainContent/Cards";
+import ReceptCards from "@/components/UI/Cards";
 
 export default {
   name: "AllRecipes",

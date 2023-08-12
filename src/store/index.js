@@ -1,5 +1,6 @@
 import { createStore } from "vuex";
 import axios from "axios";
+import { useRouter, router, useRoute } from "vue-router";
 
 export default createStore({
   state: {
@@ -11,35 +12,53 @@ export default createStore({
     category: "",
     title: "",
     limit: 6,
+    totalPages: 1,
+
+    fullRecipe: {},
     categories: [],
     areas: [],
     ingredients: [],
     times: [],
     recipes: [],
-    ingredientsForFiltr: [],
+    titles: [],
     allRicipes: [],
+
+    ingredientsForFiltr: [],
+    favoritesReciepts: [],
+
     timesFilter: [],
     areasFilter: [],
+    titlesFilter: [],
     categoriesFilter: [],
     ingredientsFilter: [],
+
+    heroModal: false,
+    recieptModal: false,
   },
 
-  getters: {},
+  getters: {
+    
+  },
   mutations: {
     setLimit(state, limit) {
       state.limit = limit;
-    },
-
-    setRecipes(state, recipes) {
-      state.recipes = recipes;
     },
 
     set(state, { key, value }) {
       if (state.hasOwnProperty(key)) {
         state[key] = value;
       }
+    }, 
+    setHeroModal(state, value) {
+      state.heroModal = value;
+    },
+    setRecieptModal(state, value) {
+      state.recieptModal = value;
     },
   },
+
+   
+  
   actions: {
     set({ commit }, { key, value }) {
       commit("set", { key, value });
@@ -53,7 +72,6 @@ export default createStore({
         const response = await axios.get(INGREDIENTS_URL);
         const ingredientsData = response.data;
 
-        // Convert ingredientsData to the desired format
         const formattedIngredients = ingredientsData.map((ingredient) => {
           return {
             _id: ingredient._id,
@@ -113,11 +131,15 @@ export default createStore({
         const allTimes = Array.from(
           new Set(Allrecipes.data.results.map((recipe) => recipe.time))
         );
+        const allTitles = Array.from(
+          new Set(Allrecipes.data.results.map((recipe) => recipe.title))
+        );
         commit("set", { key: "allRicipes", value: Allrecipes.data.results });
         commit("set", { key: "categories", value: allCategories });
         commit("set", { key: "areas", value: allAreas });
         commit("set", { key: "ingredients", value: allIngredients });
         commit("set", { key: "times", value: allTimes });
+        commit("set", { key: "titles", value: allTitles });
       } catch (error) {
         console.log(error);
       }
@@ -134,7 +156,7 @@ export default createStore({
       }
     },
 
-    async fetchRecipesAfterUpdate({ state, commit, dispatch }) {
+    async fetchRecipesAfterUpdate({ state, commit, dispatch }, query) {
       const BASE_URL = "https://tasty-treats-backend.p.goit.global/api/recipes";
       const url = BASE_URL;
       const searchLimit = await dispatch("setLimitValue");
@@ -147,18 +169,117 @@ export default createStore({
         ingredient: state.ingredient,
         title: state.title,
       };
-
       try {
         const Allrecipes = await axios.get(url, { params });
-        commit("setRecipes", Allrecipes.data.results);
-        console.log(Allrecipes.data.results);
-        // console.log(store.state);
+        commit("set", {
+          key: "recipes",
+          value: Allrecipes.data.results,
+        },);
+        
+        commit("set", { key: "totalPages", value: Allrecipes.data.totalPages });
+        
       } catch (error) {
         console.log(error);
-      } finally {
-        console.log(state.recipes);
       }
     },
+
+    async  FechFullRecipe({ commit }, id, dispatch, state) {
+      const BASE_URL = `https://tasty-treats-backend.p.goit.global/api/recipes`;
+      try {
+        const Recipe = await axios.get(`${BASE_URL}/${id}`);
+        commit("set", {
+          key: "fullRecipe",
+          value: Recipe.data,
+        })
+      } catch (error) {
+        console.log(error);
+      } finally{ 
+        commit("set", { key: "recieptModal", value: true })
+        }
+    },
+
+    setFilterValue({ state, commit, dispatch }) {
+      const { area, time, ingredient, category, title } = state;
+      
+      const filteredRecipes = state.allRicipes.filter((recipe) => {
+        if (area && recipe.area !== area) {
+          return false;
+        }
+        if (time && recipe.time !== time) {
+          return false;
+        }
+        if (
+          ingredient &&
+          !recipe.ingredients.some((ingr) => ingr.id === ingredient)
+        ) {
+          return false;
+        }
+        if (category && recipe.category !== category) {
+          return false;
+        }
+
+        if (
+          title &&
+          !recipe.title.toLowerCase().includes(title.toLowerCase())
+        ) {
+          return false;
+        }
+        return true;
+      });
+     
+      const uniqueAreas = [
+        ...new Set(filteredRecipes.map((recipe) => recipe.area)),
+      ];
+      dispatch("set", { key: "areasFilter", value: uniqueAreas });
+
+      const uniqueTimes = [
+        ...new Set(filteredRecipes.map((recipe) => recipe.time)),
+      ];
+      dispatch("set", { key: "timesFilter", value: uniqueTimes });
+
+      const uniqueIngredients = [
+        ...new Set(
+          filteredRecipes.flatMap((recipe) =>
+            recipe.ingredients.map((ingredient) => ingredient.id)
+          )
+        ),
+      ];
+
+      const uniqueFromIngredients = state.ingredients.filter((ingredient) =>
+        uniqueIngredients.includes(ingredient._id)
+      );
+
+      dispatch("set", {
+        key: "ingredientsFilter",
+        value: uniqueFromIngredients,
+      });
+
+      const uniqueCategories = [
+        ...new Set(filteredRecipes.map((recipe) => recipe.category)),
+      ];
+
+      dispatch("set", {
+        key: "categoriesFilter",
+        value: uniqueCategories,
+      });
+
+      const uniqueTitles = [
+        ...new Set(filteredRecipes.map((recipe) => recipe.title)),
+      ];
+
+      dispatch("set", {
+        key: "titlesFilter",
+        value: uniqueTitles,
+      });
+    },
+
+    setHeroModal({ commit }, value) {
+      commit("setHeroModal", value);
+    },
+
+    setRecieptModal({ commit }, value) {
+      commit("setRecieptModal", value);
+    },
+
   },
-  modules: {},
 });

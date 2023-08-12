@@ -1,25 +1,68 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
+import { createRouter, createWebHistory } from 'vue-router';
+import store from "@/store/index";
+import HomeView from '@/views/HomeView.vue';
+import FavoriteView from '@/views/FavoriteView.vue';
 
 const routes = [
   {
     path: '/',
     name: 'home',
-    component: HomeView
+    component: HomeView,
+    props: route => ({
+      page: 1,
+      category: route.query.category || "",
+      area: route.query.area || "",
+      time: route.query.time || "",
+      ingredient: route.query.ingredient || "",
+      title: route.query.title || "",
+    })
+
   },
   {
-    path: '/about',
-    name: 'about',
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "about" */ '../views/AboutView.vue')
-  }
-]
+    path: '/favorites',
+    name: 'favorites',
+    component: FavoriteView,
+  },
+];
 
 const router = createRouter({
   history: createWebHistory(process.env.BASE_URL),
-  routes
-})
+  routes,
+});
 
-export default router
+const fieldsToSync = ['page', 'area', 'time', 'ingredient', 'category', 'query'];
+
+const updateQuery = () => {
+  const query = { ...router.currentRoute.query };
+
+  fieldsToSync.forEach(field => {
+    query[field] = store.state[field] || '';
+  });
+
+  router.replace({ ...router.currentRoute, query });
+};
+
+fieldsToSync.forEach(key => {
+  store.watch(
+    state => state[key],
+    () => {
+      updateQuery();
+    }
+  );
+});
+
+
+router.afterEach((to, from) => {
+  if (to.name !== 'favorites') {
+    fieldsToSync.forEach(key => {
+      if (to.query[key] !== store.state[key]) {
+        if (key === 'page' && !to.query.page) {
+          to.query.page = 1;
+        }
+        store.commit('set', { key, value: to.query[key] || '' });
+      }
+    });
+  }
+});
+
+export default router;

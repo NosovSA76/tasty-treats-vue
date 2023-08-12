@@ -1,21 +1,22 @@
 <template>
   <div class="item-select">
-    <h2 class="text-search"></h2>
-    <div class="custom-select">
-      <div
-        class="selected-option"
-        @click.stop="optonForShow === 'Оберіть' ? toggleOptionsList() : null"
-      >
+    <h2 class="text-search">{{ propName }}</h2>
+    <div @click.stop>
+    <div
+      class="custom-select"
+      @click.stop="optonForShow === 'Select' ? toggleOptionsList() : null"
+    >
+      <div  :class="{'selected-option': true, [propName]: true }">
         <span class="elem-prev">{{
-          propName === "time" && optonForShow !== "Оберіть"
+          propName === "time" && optonForShow !== "Select"
             ? optonForShow + " min"
-            : propName === "ingredient" && optonForShow !== "Оберіть"
+            : propName === "ingredient" && optonForShow !== "Select"
             ? optonForShow.name
             : optonForShow
         }}</span>
 
         <svg
-          v-if="optonForShow === 'Оберіть'"
+          v-if="optonForShow === 'Select'"
           :class="{ active: showOptionsList }"
           class="search-arrow"
           width="18px"
@@ -23,9 +24,13 @@
         >
           <use href="@/assets/SPRITE.svg#search-arrow"></use>
         </svg>
-        <button class="clearSelection" @click.stop="clearSelection()">
+        <button
+          @click="optonForShow !== 'Select' ? clearSelection() : null"
+          :class="{ novisible: optonForShow === 'Select' }"
+          class="clearSelection"
+        >
           <img
-            v-if="optonForShow !== 'Оберіть'"
+            v-if="optonForShow !== 'Select'"
             width="18px"
             height="18px"
             src="@/assets/x.svg"
@@ -33,7 +38,7 @@
         </button>
       </div>
       <ul
-        v-show="showOptionsList && optonForShow === 'Оберіть'"
+        v-show="showOptionsList && optonForShow === 'Select'"
         class="options-list"
         :class="{ active: showOptionsList }"
       >
@@ -53,13 +58,15 @@
           </button>
         </li>
       </ul>
-    </div>
+    </div></div>
   </div>
 </template>
 
 <script>
 import DropDownList from "@/components/UI/DropDownList";
 import store from "@/store/index";
+import { useRouter } from "vue-router";
+import { computed, ref, onMounted } from 'vue';
 
 function universalCompare(a, b) {
   if (typeof a === "number" && typeof b === "number") {
@@ -75,152 +82,93 @@ export default {
   components: {
     DropDownList,
   },
+  
 
-  data() {
-    return {
-      optonForShow: "Оберіть",
-      showOptionsList: false,
-      selectedOption: null,
+  setup(props){
+    console.log(props.propsName)
+    const optonForShow = ref("Select");
+    const showOptionsList = ref(false);
+    const rootElement = ref(null);
+
+     const clearSelection = () => {
+      if (optonForShow !== "Select") {
+        optonForShow.value = "Select";
+        store.dispatch("set", { key: props.propName, value: "" });
+        store.dispatch("setFilterValue");
+        setSelectedOption();
+      }
     };
-  },
 
-  methods: {
-    clearSelection() {
-      if (this.optonForShow !== "Оберіть") {
-        this.optonForShow = "Оберіть";
-        store.dispatch("set", { key: this.propName, value: "" });
-        this.setFilterValue();
-        this.setSelectedOption();
-      }
-    },
-
-    toggleOptionsList() {
-      this.showOptionsList = !this.showOptionsList;
-      console.log(store.state);
-      if (this.showOptionsList) {
-        document.addEventListener("click", this.toggleOptionsList);
-      } else {
-        document.removeEventListener("click", this.toggleOptionsList);
-      }
-    },
-
-    setSelectedOption(option) {
+    const toggleOptionsList = () =>{
+      showOptionsList.value = !showOptionsList.value;
+    };
+    
+    const setSelectedOption = (option) => {
       if (option) {
-        this.optonForShow = option;
-        if (this.propName !== "ingredient") {
-          store.dispatch("set", { key: this.propName, value: option });
+        optonForShow.value = option;
+        if (props.propName !== "ingredient") {
+          store.dispatch("set", { key: props.propName, value: option });
         } else {
-          store.dispatch("set", { key: this.propName, value: option._id });
+          store.dispatch("set", { key: props.propName, value: option._id });
         }
-        this.setFilterValue();
+        store.dispatch("setFilterValue");
       }
-
+      store.dispatch("set", {key: "page", value: 1});
+      
       store
         .dispatch("fetchRecipesAfterUpdate")
         .then(() => {
-          this.isLoading = false;
-          this.isLoaded = true;
-        })
+      })
         .catch((error) => {
-          this.isLoading = false;
           console.log(error);
         });
-    },
+  };
 
-    setFilterValue() {
-      const { area, time, ingredient, category } = store.state;
-
-      const filteredRecipes = store.state.allRicipes.filter((recipe) => {
-        if (area && recipe.area !== area) {
-          return false;
-        }
-        if (time && recipe.time !== time) {
-          return false;
-        }
-        if (
-          ingredient &&
-          !recipe.ingredients.some((ingr) => ingr.id === ingredient)
-        ) {
-          console.log("waw");
-          return false;
-        }
-        if (category && recipe.category !== category) {
-          return false;
-        }
-
-        if (
-          this.query &&
-          !recipe.title.toLowerCase().includes(this.query.toLowerCase())
-        ) {
-          return false;
-        }
-
-        return true;
-      });
-      console.log(filteredRecipes);
-      const uniqueAreas = [
-        ...new Set(filteredRecipes.map((recipe) => recipe.area)),
-      ];
-      console.log(uniqueAreas);
-      store.dispatch("set", { key: "areasFilter", value: uniqueAreas });
-
-      const uniqueTimes = [
-        ...new Set(filteredRecipes.map((recipe) => recipe.time)),
-      ];
-      store.dispatch("set", { key: "timesFilter", value: uniqueTimes });
-
-      const uniqueIngredients = [
-        ...new Set(
-          filteredRecipes.flatMap((recipe) =>
-            recipe.ingredients.map((ingredient) => ingredient.id)
-          )
-        ),
-      ];
-
-      const uniqueFromIngredients = store.state.ingredients.filter(
-        (ingredient) => uniqueIngredients.includes(ingredient._id)
-      );
-
-      store.dispatch("set", {
-        key: "ingredientsFilter",
-        value: uniqueFromIngredients,
-      });
-
-      const uniqueCategories = [
-        ...new Set(filteredRecipes.map((recipe) => recipe.category)),
-      ];
-
-      store.dispatch("set", {
-        key: "categoriesFilter",
-        value: uniqueCategories,
-      });
-    },
-  },
-
-  computed: {
-    options() {
-      return this.optionsForSort.slice().sort(universalCompare);
-    },
-
-    optionsForSort() {
-      const filterPropName = this.propsName + "Filter";
-
-      if (store.state[filterPropName].length > 0) {
-        return store.state[filterPropName];
-      } else {
-        if (this.propsName === "ingredients") {
-          return store.state[this.propsName].slice().sort((a, b) => {
-            return universalCompare(a.name, b.name);
-          });
-        }
-        return store.state[this.propsName];
+  const optionsForSort = computed(() => {
+    const filterPropName = props.propsName + "Filter";
+    if (store.state[filterPropName].length > 0) {
+      return store.state[filterPropName];
+    } else {
+      if (props.propsName === "ingredients") {
+        return store.state[props.propsName].slice().sort((a, b) => {
+          return universalCompare(a.name, b.name);
+        });
       }
-    },
-  },
-};
+      return store.state[props.propsName];
+    }
+  });
+
+    const options = computed(() => {
+    return toArray(optionsForSort.value).slice().sort(universalCompare);
+  });
+
+  const toArray = (computedValue) => {
+    return computedValue instanceof Array ? computedValue : [computedValue];
+  };
+  
+
+  onMounted(() => {
+    store.dispatch("setFilterValue");
+  });
+  
+    return {
+      optonForShow,
+      showOptionsList,
+      options,
+      optionsForSort,
+      clearSelection,
+      toggleOptionsList,
+      setSelectedOption,
+    };
+  }
+ }
 </script>
 
-<style lang="scss">
+<style lang="scss" >
+.novisible {
+  z-index: -10;
+}
+
 .clearSelection {
   position: absolute;
   top: 15px;
@@ -247,6 +195,7 @@ export default {
   font-weight: 500;
   line-height: 18px;
   margin-bottom: 8px;
+  text-transform: capitalize;
 }
 
 .custom-select {
@@ -267,13 +216,17 @@ export default {
   fill: var(--gray-title-w);
 }
 
+
+.custom-select .selected-option span {
+  margin-right: 5px;
+}
+
 .custom-select .selected-option {
   background-color: var(--white-w);
   display: flex;
   align-items: center;
   max-width: 100%;
   width: 160px;
-
   cursor: pointer;
   @media screen and (min-width: 768px) {
     width: 125px;
@@ -281,17 +234,12 @@ export default {
 }
 
 @media screen and (min-width: 768px) {
-  .custom-select .selected-area {
+  .custom-select .area {
     width: 141px;
   }
 }
 
-.custom-select .selected-option span {
-  margin-right: 5px;
-}
-
 .custom-select .options-list {
-  position: absolute;
   top: 100%;
   left: 0;
   width: 100%;
@@ -300,6 +248,19 @@ export default {
   background-color: var(--white-d);
   border-top: none;
   display: none;
+}
+
+.options-list {
+  z-index: 9;
+  overflow-y: auto;
+  position: absolute;
+  height: 124px;
+  padding-top: 6px;
+  padding-left: 18px;
+  padding-bottom: 6px;
+  border-radius: 14px;
+  background-color: var(--white-d);
+  box-shadow: 0px 4px 36px 0px rgba(0, 0, 0, 0.02);
 }
 
 .custom-select .options-list .option {
@@ -311,7 +272,8 @@ export default {
   color: var(--black);
   transition: var(--trns-general);
 }
-.item-ingridienst {
+
+.selected-option.ingredient {
   background-color: var(--white-w);
   width: 188px;
   max-width: 100%;
@@ -321,18 +283,6 @@ export default {
   border: 1px solid var(--gray-border-w);
   align-items: center;
   display: flex;
-}
-
-.options-list {
-  overflow-y: auto;
-  position: absolute;
-  height: 124px;
-  padding-top: 6px;
-  padding-left: 18px;
-  padding-bottom: 6px;
-  border-radius: 14px;
-  background-color: var(--white-d);
-  box-shadow: 0px 4px 36px 0px rgba(0, 0, 0, 0.02);
 }
 
 .option-item {

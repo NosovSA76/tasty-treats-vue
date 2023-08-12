@@ -11,7 +11,13 @@
           TastyTreats - Customize Your Meal with Ingredient Options and
           Step-by-Step Video Guides.
         </p>
-        <button type="button" class="event-order order-btn">Order now</button>
+        <button
+          type="button"
+          class="event-order order-btn"
+          @click="modalShow"
+        >
+          Order now
+        </button>
       </div>
       <div class="crunch animate__animated animate__fadeInRight">
         <div class="events swiper-wrapper">
@@ -24,12 +30,25 @@
 
 <script>
 import Event from "@/components/Home/Hero/Event";
+import store from "@/store/index";
 
 export default {
   name: "Hero",
+
+
   components: {
     Event,
   },
+  data() {
+    return {
+    };
+  },
+  methods:{
+    modalShow(){
+      store.dispatch("setHeroModal",  true);
+      console.log(store.state)
+    },
+  }
 };
 </script>
 
