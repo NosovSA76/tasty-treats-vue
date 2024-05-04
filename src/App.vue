@@ -49,7 +49,6 @@ export default {
       .then(() => {
         this.isLoading = false;
         this.isLoaded = true;
-        console.log(store.state);
       })
       .catch((error) => {
         this.isLoading = false;

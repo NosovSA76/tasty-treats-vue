@@ -83,7 +83,6 @@ export default {
         const response = await axios.get(
           `https://tasty-treats-backend.p.goit.global/api/events`
         );
-        console.log(response.data);
         if (response.status === 404) {
           throw new Error(response.status);
         }

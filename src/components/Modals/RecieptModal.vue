@@ -79,21 +79,18 @@ const formatInstructions = (instructions) => {
 };
 
 const toggleFavorite = (recipe) => {
+  inFavorites.value = !inFavorites.value
+
   const existingRecipeIndex = favoritesForModal.value.findIndex(
     (favRecipe) => favRecipe._id === recipe._id
   );
   if (existingRecipeIndex !== -1) {
-    fert = 
     favoritesForModal.value.splice(existingRecipeIndex, 1);
   } else {
     favoritesForModal.value.push(recipe);
   }
   save("favorites", favoritesForModal.value);
   store.dispatch("set", { key: "favoritesReciepts", value: favoritesForModal.value });
-  if (router.currentRoute.value.path === '/favorites') {
-    store.dispatch("setRecieptModal", false);
-  }
-  console.log(store.state.favoritesReciepts)
 };
 
 onMounted(() => {
@@ -103,7 +100,7 @@ onMounted(() => {
     inFavorites.value = favoritesForModal.value.some(
       (favRecipe) => favRecipe._id === reciept.value._id
       
-    );console.log("333")
+    );
   }
 });
 

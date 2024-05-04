@@ -24,9 +24,8 @@ export default {
   methods:{
     hideModal(){
       store.dispatch("setHeroModal",  false);
-      console.log(store.state)
       store.dispatch("setRecieptModal",  false);
-      console.log(store.state)
+      document.body.style.overflow = 'auto';
     }
   }
 };

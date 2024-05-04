@@ -39,7 +39,7 @@
 </template>
 <script>
 import Star from "@/components/UI/ReiringStar";
-// import StarRating from 'vue-star-rating'
+
 import store from "@/store/index";
 import { save, load, remove } from '@/utils/localStorageHelpers';
 
@@ -51,7 +51,7 @@ export default {
   data() {
   return {
     favorites: [],
-    receiptRend: [], // Corrected variable name
+    receiptRend: [], 
   };
 },
   props: {
@@ -63,26 +63,25 @@ export default {
 
   },
   mounted() {
-    if (!Array.isArray(this.recipes)) {
+   
+  if (!Array.isArray(this.recipes)) {
       console.error("Властивість recipes має бути масивом.");
       return;
     }
     this.favorites = load('favorites') || [],
-    // this.favorites = JSON.parse(localStorage.getItem('favorites')) || [],
     store.dispatch("set", {key: "favoritesReciepts", value: this.favorites});
     this.recieptRend = this.recipes
     this.$watch(
       () => store.state.favoritesReciepts,
       () => {
         this.favorites = load('favorites') || [];
-        store.dispatch("set", { key: "favoritesReciepts", value: this.favorites });
       }
     );
+
   },
 
   computed: {
     isFavorite() {
-      // this.favorites = JSON.parse(localStorage.getItem('favorites'))
       return (recipe) =>
         this.favorites.some((favRecipe) => favRecipe._id === recipe._id);
     },
@@ -96,7 +95,7 @@ export default {
 
     modalShow(id) {
       store.dispatch("FechFullRecipe", id);
-      console.log(id);
+      document.body.style.overflow = 'hidden';
     },
 
     toggleFavorite(recipe) {
@@ -108,16 +107,15 @@ export default {
       } else {
         this.favorites.push(recipe);
       }
-      // localStorage.setItem("favorites", JSON.stringify(this.favorites));
       save("favorites", this.favorites);
       store.dispatch("set", {key: "favoritesReciepts", value: this.favorites});
-      console.log(store.favoritesReciepts)
     },
 
     removeFocus() {
       document.activeElement.blur();
     },
-
+    
+ 
   },
   onMounted() {
     this.favorites = load('favorites')

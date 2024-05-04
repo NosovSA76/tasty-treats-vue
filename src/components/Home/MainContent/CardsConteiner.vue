@@ -1,6 +1,5 @@
 <template>
   <div class="container-cards">
-    <!-- Ваш шаблон тут -->
     <ul class="cards_list">
       <ReceptCards :recipes="recipesForRender"></ReceptCards>
     </ul>

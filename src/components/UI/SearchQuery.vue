@@ -85,7 +85,6 @@ export default {
   
 
   setup(props){
-    console.log(props.propsName)
     const optonForShow = ref("Select");
     const showOptionsList = ref(false);
     const rootElement = ref(null);

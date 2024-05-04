@@ -73,7 +73,7 @@ export default {
     },
 
     updateFilteredReciepts() {
-      console.log("222")
+      console.log("222+")
       if (this.selectCategory === "All category") {
         this.filteredReciepts = this.favoritesReciept;
       } else {
@@ -88,29 +88,42 @@ export default {
         }
       }
     },
+    
+    updateFavorites(newFavorites) {
+      this.favoritesReciept = newFavorites;
+      this.updateFilteredReciepts();
+  }
   },
 
   watch: {
-    favoritesReciept: {
-      handler(newFavoritesReciept) {
-        this.favoritesReciept = newFavoritesReciept;
-        this.updateFilteredReciepts();
-      },
-      deep: true, 
-      // immediate: true, 
+  favoritesReciept: {
+    handler(newFavoritesReciept) {
+      this.updateFavorites(newFavoritesReciept);
+      this.updateFilteredReciepts();
     },
+    deep: true
   },
+},
 
   mounted() {
     this.favoritesReciept = store.state.favoritesReciepts || [];
-    this.updateFilteredReciepts();
-    // this.$watch(
-    //   () => store.state.favoritesReciepts,
-    //   () => {
-    //     this.favorites = load('favorites') || [];
-    //     store.dispatch("set", { key: "favoritesReciepts", value: this.favorites });
-    //   }
-    // );
+
+    this.$watch(
+      () => store.state.recieptModal,
+      () => {
+ 
+        this.updateFavorites(store.state.favoritesReciepts);
+        this.updateFilteredReciepts();
+      }
+    );
+    this.$watch(
+      () => store.state.favoritesReciepts,
+      () => {
+        console.log("wowr")
+        this.updateFavorites(store.state.favoritesReciepts);
+        this.updateFilteredReciepts();
+      }
+    );
   },
 
   computed: {

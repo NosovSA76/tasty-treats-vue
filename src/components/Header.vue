@@ -88,7 +88,7 @@ export default {
   left: 0;
   width: 100%;
   height: 2px;
-  background-color: var(--green); /* Цвет полоски */
+  background-color: var(--green);
   transform: scaleX(0);
   transition: transform 0.3s ease-in-out;
 }
